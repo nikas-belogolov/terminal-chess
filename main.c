@@ -2,9 +2,28 @@
 //
 
 #include "stdio.h"
+#include "game.h"
+#include "locale.h"
+#include "io.h"
 
 int main()
 {
-	printf("Terminal Chess");
+	setlocale(LC_ALL, "en_US.UTF-8");
+	#ifdef _WIN32
+	SetConsoleOutputCP(CP_UTF8);
+	#endif
+	
+	Game* game = game_create();
+	
+	board_print(game);
+
+	while (!game_is_over(game)) {
+		clear_screen();
+		board_print(game);
+		printf("\nPlayer to move: %s\n", game->current_player == WHITE ? "white" : "black");
+
+		board_move(game, get_move(game));
+	}
+
 	return 0;
 }
