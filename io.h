@@ -60,7 +60,7 @@ inline void clear_screen()
 }
 #endif
 
-Piece get_pawn_promotion();
+Piece get_pawn_promotion(Game* game);
 Move get_move(Game* game);
 
 #endif

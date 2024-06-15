@@ -1,17 +1,18 @@
 #include "io.h"
 #include "game.h"
+#include "move.h"
 
 #include <stdbool.h>
 
 #define RED_COLOR_START "\033[0;31m"
 #define RED_COLOR_END "\033[0m"
 
-void clear_input_buffer() {
+static void clear_input_buffer(void) {
 	int ch;
 	while ((ch = getchar()) != '\n' && ch != EOF);
 }
 
-void ask_coordinates(char q[], char* cord) {
+static void ask_coordinates(char q[], char* cord) {
 	do {
 		printf("%s ", q);
 		fgets(cord, 3, stdin);
@@ -24,8 +25,36 @@ void ask_coordinates(char q[], char* cord) {
 	} while (true);
 }
 
-Piece get_pawn_promotion() {
+Piece get_pawn_promotion(Game* game) {
+	printf("Choose piece to promote your pawn to:\n");
+	printf("Queen (Q) | Rook (R) | Bishop (B) | Knight (K)\n");
 
+	char piece[2];
+	piece[1] = '\0';
+
+	do {
+		fgets(piece, 2, stdin);
+		clear_input_buffer();
+
+		piece[0] == (char)tolower((unsigned char)piece[0]);
+
+		if (piece[0] == 'q' || piece[0] == 'r' || piece[0] == 'b' || piece[0] == 'k') break;
+
+		printf("%sPlease choose a queen, rook, bishop, or knight as a promotion piece!%s\n", RED_COLOR_START, RED_COLOR_END);
+
+
+	} while (true);
+
+	switch (piece[0]) {
+		case 'q':
+			return game->current_player == WHITE ? WHITE_QUEEN : BLACK_QUEEN;
+		case 'r':
+			return game->current_player == WHITE ? WHITE_ROOK : BLACK_ROOK;
+		case 'b':
+			return game->current_player == WHITE ? WHITE_BISHOP : BLACK_BISHOP;
+		case 'k':
+			return game->current_player == WHITE ? WHITE_KNIGHT : BLACK_KNIGHT;
+	}
 }
 
 Move get_move(Game* game) {
@@ -46,7 +75,7 @@ Move get_move(Game* game) {
 		to_pos = (Position){ to[1] - '0' - 1, toupper(to[0]) - 'A' };
 		move = (Move){ from_pos, to_pos };
 
-		if (is_legal_move(&move)) break;
+		if (is_legal_move(game, move)) break;
 		clear_screen();
 		board_print(game);
 		printf("\nPlayer to move: %s\n", game->current_player == WHITE ? "white" : "black");

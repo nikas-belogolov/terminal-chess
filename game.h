@@ -25,5 +25,7 @@ typedef struct Game {
 } Game;
 
 Game* game_create(void);
+bool game_is_over(Game* game);
+void game_print_winner(Game* game);
 
 #endif

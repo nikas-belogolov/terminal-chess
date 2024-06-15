@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "game.h"
+#include "utils.h"
+#include "move.h"
 
 Game* game_create(void) {
 	Game* game = (Game*)malloc(sizeof(Game));
@@ -11,6 +13,7 @@ Game* game_create(void) {
 	if (game == NULL) return NULL;
 
 	game->is_game_over = false;
+    game->last_move = (Move){ {-1, -1}, {-1, -1} };
 	game->turns_until_draw = 100;
 	game->current_player = WHITE;
 
@@ -24,6 +27,71 @@ Game* game_create(void) {
 	return game;
 }
 
+static bool is_checkmate(Game* game) {
+    if (!is_current_player_in_check(game)) return false;
+
+    // Check if king can move in any direction without getting a check, or if one of current player pieces can capture the checking piece
+    //Position king_pos = { 0, 0 };
+    int king_rank;
+    int king_file;
+
+    for (int rank = 0; rank < 8; rank++) {
+        for (int file = 0; file < 8; file++) {
+            if (game->board[rank][file] == WHITE_KING && game->current_player == WHITE ||
+                game->board[rank][file] == BLACK_KING && game->current_player == BLACK) {
+                king_rank = rank;
+                king_file = file;
+            }
+        }
+    }
+
+    Position possible_positions[8] = {
+        { king_rank - 1, king_file - 1 }, { king_rank - 1, king_file }, { king_rank - 1, king_file + 1 },
+        { king_rank,     king_file - 1 },                               { king_rank,     king_file + 1 },
+        { king_rank + 1, king_file - 1 }, { king_rank + 1, king_file }, { king_rank + 1, king_file + 1 },
+
+    };
+
+    // Loop over all king possible moves and check if he can escape a check
+    for (int i = 0; i < 8; i++) {
+        Position pos = possible_positions[i]; // Possible king move to escape check
+
+        if (!is_legal_position(pos)) continue; // Invalid move
+        Position from = { king_rank, king_file };
+        Position to = { pos.rank, pos.file };
+
+        if (!is_legal_move(game, (Move) { from, to })) continue; // King cannot move to this square
+
+        return true;
+    }
+
+    // TODO: Check if any piece can block or eat the checking piece
+}
+
+static bool is_stalemate(Game* game) {
+	if (game->turns_until_draw == 0) return true;
+
+	for (int rank = 0; rank < 8; rank++) {
+		for (int file = 0; file < 8; file++) {
+			if (
+				is_current_player_piece(game->current_player, game->board[rank][file]) &&
+				can_piece_move(game, (Position){ rank, file })
+				) return false;
+		}
+	}
+
+	return true;
+}
+
 bool game_is_over(Game* game) {
-	return game->turns_until_draw == 0;
+	return is_checkmate(game) || is_stalemate(game);
+}
+
+void game_print_winner(Game* game) {
+	if (is_stalemate(game)) {
+		printf("Stalemate, no one won!");
+		return;
+	}
+
+	printf("%s player won!", game->current_player == WHITE ? "Black" : "White");
 }

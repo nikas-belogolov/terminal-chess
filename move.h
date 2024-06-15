@@ -5,6 +5,8 @@
 #include "game.h"
 #include "board.h"
 
-bool is_legal_move(Move* move);
+bool can_piece_move(Game* game, Position pos);
+bool is_legal_move(Game* game, Move move);
+bool is_current_player_in_check(Game* game);
 
 #endif

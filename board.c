@@ -65,7 +65,7 @@ void board_move(Game* game, Move move) {
     else game->turns_until_draw = 100;
 
     
-    game->board[move.to.rank][move.to.file] = is_pawn_promotion(game, move) ? get_pawn_promotion() : piece_to_move;
+    game->board[move.to.rank][move.to.file] = is_pawn_promotion(game, move) ? get_pawn_promotion(game) : piece_to_move;
     game->board[move.from.rank][move.from.file] = EMPTY;
 
     if ((piece_to_move == WHITE_KING || piece_to_move == BLACK_KING) &&
