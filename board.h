@@ -1,6 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include <stdbool.h>
 
 typedef struct Game Game;
 
@@ -34,5 +35,7 @@ typedef struct {
 void board_init(Piece board[8][8]);
 void board_print(Game* game);
 void board_move(Game* game, Move move);
+
+bool is_last_move_en_passant(Game* game, Move move);
 
 #endif

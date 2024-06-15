@@ -76,8 +76,8 @@ Move get_move(Game* game) {
 		move = (Move){ from_pos, to_pos };
 
 		if (is_legal_move(game, move)) break;
-		clear_screen();
-		board_print(game);
+		/*clear_screen();
+		board_print(game);*/
 		printf("\nPlayer to move: %s\n", game->current_player == WHITE ? "white" : "black");
 
 		printf("%sIllegal move, enter other move.%s\n", RED_COLOR_START, RED_COLOR_END);

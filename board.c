@@ -47,6 +47,16 @@ void board_init(Piece board[8][8]) {
     }
 }
 
+bool is_last_move_en_passant(Game* game, Move move) {
+    if (game->board[move.from.rank][move.from.file] == WHITE_PAWN ||
+        game->board[move.from.rank][move.from.file] == BLACK_PAWN) { // Moving pawn
+        if (abs(move.to.file - move.from.file) == 1 &&
+            game->board[move.to.rank][move.to.file] == EMPTY) return true; // Moved diagonally without capturing piece
+    }
+
+    return false;
+}
+
 bool is_pawn_promotion(Game* game, Move move) {
     if (game->board[move.from.rank][move.from.file] != BLACK_PAWN &&
         game->board[move.from.rank][move.from.file] != WHITE_PAWN) return false;
@@ -64,6 +74,14 @@ void board_move(Game* game, Move move) {
         game->board[move.to.rank][move.to.file] == EMPTY) game->turns_until_draw--;
     else game->turns_until_draw = 100;
 
+    if (is_last_move_en_passant(game, move)) {
+        if (game->current_player == WHITE) {
+            game->board[move.to.rank + 1][move.to.file] = EMPTY;
+        }
+        else {
+            game->board[move.to.rank - 1][move.to.file] = EMPTY;
+        }
+    }
     
     game->board[move.to.rank][move.to.file] = is_pawn_promotion(game, move) ? get_pawn_promotion(game) : piece_to_move;
     game->board[move.from.rank][move.from.file] = EMPTY;
@@ -73,7 +91,7 @@ void board_move(Game* game, Move move) {
 
         if (move.from.file - move.to.file > 0) { // Castling to the left
             game->board[move.from.rank][0] = EMPTY;
-            game->board[move.from.rank][2] = game->current_player == WHITE ? WHITE_ROOK : BLACK_ROOK;
+            game->board[move.from.rank][3] = game->current_player == WHITE ? WHITE_ROOK : BLACK_ROOK;
 
         }
         else {

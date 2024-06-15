@@ -28,7 +28,8 @@ Game* game_create(void) {
 }
 
 static bool is_checkmate(Game* game) {
-    if (!is_current_player_in_check(game)) return false;
+    Position checking_piece_pos;
+    if (!is_king_in_check(game, &checking_piece_pos)) return false;
 
     // Check if king can move in any direction without getting a check, or if one of current player pieces can capture the checking piece
     //Position king_pos = { 0, 0 };
@@ -60,12 +61,25 @@ static bool is_checkmate(Game* game) {
         Position from = { king_rank, king_file };
         Position to = { pos.rank, pos.file };
 
-        if (!is_legal_move(game, (Move) { from, to })) continue; // King cannot move to this square
+        if (is_legal_move(game, (Move) { from, to })) return false;
 
-        return true;
+        //if (!is_legal_move(game, (Move) { from, to })) continue; // King cannot move to this square
+
+        //return true;
     }
 
-    // TODO: Check if any piece can block or eat the checking piece
+    // Check if any piece can eat the checking piece
+    for (int rank = 0; rank < 8; rank++) {
+        for (int file = 0; file < 8; file++) {
+            if (is_current_player_piece(game->current_player, game->board[rank][file])) {
+                if (is_legal_move(game, (Move) { { rank, file }, { checking_piece_pos.rank, checking_piece_pos.file } })) 
+                    return false;
+            }
+        }
+    }
+
+    // Check if any piece can block the checking piece
+
 }
 
 static bool is_stalemate(Game* game) {
