@@ -35,8 +35,6 @@ static bool is_legal_pawn_move(Game* game, Move move) {
         files_moved == 1 &&
         !is_last_move_initial_two_square_pawn_advance(game)) return false; // Moving diagonally without en pasant. Illegal move
 
-    printf("Legal pawn move");
-
     return true;
 }
 
