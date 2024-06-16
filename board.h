@@ -28,6 +28,11 @@ typedef struct {
 } Position;
 
 typedef struct {
+    Position* positions;
+    int size;
+} Path;
+
+typedef struct {
     Position from;
     Position to;
 } Move;

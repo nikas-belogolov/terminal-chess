@@ -1,9 +1,9 @@
 
+#include "board.h"
+#include "game.h"
+#include "utils.h"
 #include <stdbool.h>
 #include <stdlib.h>
-#include "board.h"
-#include "utils.h"
-#include "game.h"
 
 static bool is_last_move_initial_two_square_pawn_advance(Game* game) {
     if (game->last_move.from.rank == -1) return false;
@@ -134,8 +134,6 @@ static bool is_legal_king_move(Game* game, Move move) {
     return true;
 }
 
-
-
 static bool is_legal_piece_move(Game* game, Move move) {
     switch (game->board[move.from.rank][move.from.file]) {
         case BLACK_PAWN:
@@ -184,7 +182,10 @@ bool is_king_in_check(Game* game, Position* piece_pos) {
                 Position to_pos = { current_player_king_position.rank, current_player_king_position.file };
 
                 if (is_legal_piece_move(game, (Move) { from_pos, to_pos })) {
-                    *piece_pos = from_pos;
+                    if (piece_pos != NULL) {
+                        piece_pos->rank = from_pos.rank;
+                        piece_pos->file = from_pos.file;
+                    }
                     return true;
                 }
             }
@@ -194,36 +195,7 @@ bool is_king_in_check(Game* game, Position* piece_pos) {
     return false;
 }
 
-//Position get_checking_piece_position(Game* game) {
-//    Position current_player_king_position = { 0, 0 };
-//
-//    for (int rank = 0; rank < 8; rank++) {
-//        for (int file = 0; file < 8; file++) {
-//            if (game->board[rank][file] == WHITE_KING && game->current_player == WHITE ||
-//                game->board[rank][file] == BLACK_KING && game->current_player == BLACK) {
-//                current_player_king_position.rank = rank;
-//                current_player_king_position.file = file;
-//            }
-//        }
-//    }
-//
-//    // Check every enemy piece on the board if it can move into the kings position
-//    for (int rank = 0; rank < 8; rank++) {
-//        for (int file = 0; file < 8; file++) {
-//            if (!is_current_player_piece(game->current_player, game->board[rank][file]) &&
-//                game->board[rank][file] != EMPTY
-//                ) {
-//                Position from_pos = { rank, file };
-//                Position to_pos = { current_player_king_position.rank, current_player_king_position.file };
-//
-//                if (is_legal_piece_move(game, (Move) { from_pos, to_pos })) return true;
-//            }
-//
-//        }
-//    }
-//}
-
-bool will_king_be_in_check(Game* game, Move move) {
+static bool will_king_be_in_check(Game* game, Move move) {
     Piece piece_to_move = game->board[move.from.rank][move.from.file];
     Piece original_piece = game->board[move.to.rank][move.to.file];
 
@@ -255,7 +227,6 @@ bool will_king_be_in_check(Game* game, Move move) {
 
     return will_be_in_check;
 }
-
 
 bool is_legal_move(Game* game, Move move) {
     if (move.from.file == move.to.file &&
@@ -301,7 +272,9 @@ static bool can_pawn_move(Game* game, Position pos) {
         possible_positions[3] = (Position){ pos.rank - 1, pos.file - 1 };
     }
 
-    for (int i = 0; i < 3; i++) {
+    printf("Can pawn move: %d", pos.rank + 2);
+
+    for (int i = 0; i < 4; i++) {
         Position to = possible_positions[i];
         if (!is_legal_position(to)) continue; // Illegal move
         if (is_legal_move(game, (Move) { pos, to })) return true;
@@ -328,38 +301,66 @@ static bool can_knight_move(Game* game, Position pos) {
 }
 
 static bool can_bishop_move(Game* game, Position pos) {
-    // Check only if bishop can move in any direction one square
-    Position possible_positions[] = {
-        { pos.rank - 1, pos.file - 1 },
-        { pos.rank + 1, pos.file - 1 },
-        { pos.rank + 1, pos.file + 1 },
-        { pos.rank - 1, pos.file + 1 },
+    int directions[4][2] = {
+        { 1, 1 },
+        { 1, -1 },
+        { -1, 1 },
+        { -1, -1 }
     };
 
     for (int i = 0; i < 4; i++) {
-        Position to = possible_positions[i];
-        if (!is_legal_position(to)) continue; // Illegal move
-        if (is_legal_move(game, (Move) { pos, to })) return true;
+        int rank_step = directions[i][0];
+        int file_step = directions[i][1];
+        int rank = pos.rank + rank_step;
+        int file = pos.file + file_step;
+
+        while (rank >= 0 && rank < 8 && file >= 0 && file < 8) {
+            if (is_legal_move(game, (Move) { pos, { rank, file } })) return true;
+            rank += rank_step;
+            file += file_step;
+        }
     }
 
     return false;
 }
 
 static bool can_rook_move(Game* game, Position pos) {
-    // Check only if rook can move in any direction one square
-    Position possible_positions[] = {
-        { pos.rank - 1, pos.file },
-        { pos.rank, pos.file - 1 },
-        { pos.rank, pos.file + 1 },
-        { pos.rank + 1, pos.file },
+
+    int directions[4][2] = {
+        { 1, 0 },
+        { -1, 0 },
+        { 0, -1 },
+        { 0, 1 },
     };
 
     for (int i = 0; i < 4; i++) {
-        Position to = possible_positions[i];
-        if (!is_legal_position(to)) continue; // Illegal move
-        if (is_legal_move(game, (Move) { pos, to })) return true;
+        int rank_step = directions[i][0];
+        int file_step = directions[i][1];
+        int rank = pos.rank + rank_step;
+        int file = pos.file + file_step;
+
+        while (rank >= 0 && rank < 8 && file >= 0 && file < 8) {
+            if (is_legal_move(game, (Move) { pos, { rank, file } })) return true;
+            rank += rank_step;
+            file += file_step;
+        }
     }
 
+    //for (int rank = pos.rank + 1; rank < 8; rank++) {
+    //    if (is_legal_move(game, (Move) { pos, { rank, pos.file } })) return true;
+    //}
+
+    //for (int rank = pos.rank - 1; rank >= 0; rank--) {
+    //    if (is_legal_move(game, (Move) { pos, { rank, pos.file } })) return true;
+    //}
+
+    //for (int file = pos.file - 1; file >= 0; file--) {
+    //    if (is_legal_move(game, (Move) { pos, { pos.rank, file } })) return true;
+    //}
+    //for (int file = pos.file + 1; file < 8; file++) {
+    //    if (is_legal_move(game, (Move) { pos, { pos.rank, file } })) return true;
+    //}
+    
     return false;
 }
 
@@ -380,32 +381,94 @@ static bool can_king_move(Game* game, Position pos) {
         if (is_legal_move(game, (Move) { pos, to })) return true;
     }
 
-    // Check if king can castle
-
     return false;
 }
 
 bool can_piece_move(Game* game, Position pos) {
     switch (game->board[pos.rank][pos.file]) {
-    case BLACK_PAWN:
-    case WHITE_PAWN:
-        return can_pawn_move(game, pos);
-    case BLACK_ROOK:
-    case WHITE_ROOK:
-        return can_rook_move(game, pos);
-    case BLACK_BISHOP:
-    case WHITE_BISHOP:
-        return can_bishop_move(game, pos);
-    case BLACK_KNIGHT:
-    case WHITE_KNIGHT:
-        return can_knight_move(game, pos);
-    case BLACK_QUEEN:
-    case WHITE_QUEEN:
-        return can_queen_move(game, pos);
-    case BLACK_KING:
-    case WHITE_KING:
-        return can_king_move(game, pos);
+        case BLACK_PAWN:
+        case WHITE_PAWN:
+            return can_pawn_move(game, pos);
+        case BLACK_ROOK:
+        case WHITE_ROOK:
+            return can_rook_move(game, pos);
+        case BLACK_BISHOP:
+        case WHITE_BISHOP:
+            return can_bishop_move(game, pos);
+        case BLACK_KNIGHT:
+        case WHITE_KNIGHT:
+            return can_knight_move(game, pos);
+        case BLACK_QUEEN:
+        case WHITE_QUEEN:
+            return can_queen_move(game, pos);
+        case BLACK_KING:
+        case WHITE_KING:
+            return can_king_move(game, pos);
     }
 
     return false;
+}
+
+static void get_rook_check_path(Game* game, Position king_pos, Position checking_piece_pos, Position* path) {
+    
+    //printf("\nchecking_piece_pos: %d %d\n", checking_piece_pos.rank, checking_piece_pos.file);
+
+    if (king_pos.rank == checking_piece_pos.rank) {
+
+        int min_file = min(king_pos.file, checking_piece_pos.file);
+        int max_file = max(king_pos.file, checking_piece_pos.file);
+
+        for (int i = 0, file = min_file + 1; file < max_file; file++, i++) {
+            path[i] = (Position){ king_pos.rank, file };
+        }
+    }
+    else {
+        int min_rank = min(king_pos.rank, checking_piece_pos.rank);
+        int max_rank = max(king_pos.rank, checking_piece_pos.rank);
+
+        for (int i = 0, rank = min_rank + 1; rank < max_rank; rank++, i++) {
+            path[i].rank = rank;
+            path[i].file = king_pos.file;
+            //path[i] = (Position){ rank, king_pos.file };
+        }
+    }
+}
+
+static void get_bishop_check_path(Game* game, Position king_pos, Position checking_piece_pos, Position* path) {
+    int rank_diff = abs(king_pos.rank - checking_piece_pos.rank);
+    int file_diff = abs(king_pos.file - checking_piece_pos.file);
+
+    int rank_step = (king_pos.rank - checking_piece_pos.rank) / rank_diff;
+    int file_step = (king_pos.file - checking_piece_pos.file) / file_diff;
+
+    for (int rank = checking_piece_pos.rank + rank_step,
+             file = checking_piece_pos.file + file_step,
+             i = 0;
+        rank != king_pos.rank;
+        rank += rank_step, file += file_step, i++) {
+    
+        path[i].rank = rank;
+        path[i].file = file;
+        //path[i] = (Position){ rank, file };
+    }
+}
+
+
+void get_piece_check_path(Game* game, Position king_pos, Position checking_piece_pos, Position* path) {
+
+    Piece piece_type = game->board[checking_piece_pos.rank][checking_piece_pos.file];
+
+    //printf("\npiece_type %d %d \n", checking_piece_pos.rank, checking_piece_pos.file);
+
+    // Can only block rooks, bishops, and queens
+    switch (piece_type) {
+        case BLACK_ROOK:
+        case WHITE_ROOK:
+            get_rook_check_path(game, king_pos, checking_piece_pos, path);
+            break;
+        case BLACK_BISHOP:
+        case WHITE_BISHOP:
+            get_bishop_check_path(game, king_pos, checking_piece_pos, path);
+            break;
+    }
 }

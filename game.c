@@ -28,11 +28,11 @@ Game* game_create(void) {
 }
 
 static bool is_checkmate(Game* game) {
-    Position checking_piece_pos;
+    Position checking_piece_pos = { 0, 0 };
     if (!is_king_in_check(game, &checking_piece_pos)) return false;
 
+
     // Check if king can move in any direction without getting a check, or if one of current player pieces can capture the checking piece
-    //Position king_pos = { 0, 0 };
     int king_rank;
     int king_file;
 
@@ -45,6 +45,8 @@ static bool is_checkmate(Game* game) {
             }
         }
     }
+
+    Position king_pos = { king_rank, king_file };
 
     Position possible_positions[8] = {
         { king_rank - 1, king_file - 1 }, { king_rank - 1, king_file }, { king_rank - 1, king_file + 1 },
@@ -62,24 +64,56 @@ static bool is_checkmate(Game* game) {
         Position to = { pos.rank, pos.file };
 
         if (is_legal_move(game, (Move) { from, to })) return false;
-
-        //if (!is_legal_move(game, (Move) { from, to })) continue; // King cannot move to this square
-
-        //return true;
     }
+
+
 
     // Check if any piece can eat the checking piece
     for (int rank = 0; rank < 8; rank++) {
         for (int file = 0; file < 8; file++) {
             if (is_current_player_piece(game->current_player, game->board[rank][file])) {
-                if (is_legal_move(game, (Move) { { rank, file }, { checking_piece_pos.rank, checking_piece_pos.file } })) 
+                // Check if  piece can eat the checking piece
+                if (is_legal_move(game, (Move) { { rank, file }, { checking_piece_pos.rank, checking_piece_pos.file } }))
                     return false;
+
+                Position checking_path[7] = { -1, -1 };
+
+                //printf("Checking piece pos: %d %d", checking_piece_pos.rank, checking_piece_pos.file);
+
+                // Get all the squares between king and checking piece
+                get_piece_check_path(game, king_pos, checking_piece_pos, checking_path);
+
+                /*for (int i = 0; i < 7; i++) {
+                    if (checking_path[i].rank == -1) continue;
+                    printf("Pos: %d,%d", checking_path[i].rank, checking_path[i].file);
+                }*/
+
+                //printf("Checking if checkamte");
+
+
+                int i = 0;
+                // Check if piece can block the check path
+                
+                for (int i = 0; i < 7; i++) {
+                    if (checking_path[i].rank == -1) break;
+                    if (is_legal_move(game, (Move) { { rank, file }, checking_path[i] }))
+                        return false;
+                }
             }
         }
     }
 
     // Check if any piece can block the checking piece
+    //for (int rank = 0; rank < 8; rank++) {
+    //    for (int file = 0; file < 8; file++) {
+    //        if (is_current_player_piece(game->current_player, game->board[rank][file])) {
+    //            /*if (is_legal_move(game, (Move) { { rank, file }, { checking_piece_pos.rank, checking_piece_pos.file } }))
+    //                return false;*/
+    //        }
+    //    }
+    //}
 
+    return true;
 }
 
 static bool is_stalemate(Game* game) {
@@ -102,10 +136,10 @@ bool game_is_over(Game* game) {
 }
 
 void game_print_winner(Game* game) {
-	if (is_stalemate(game)) {
-		printf("Stalemate, no one won!");
-		return;
-	}
+    if (is_checkmate(game)) {
+        printf("%s player won!", game->current_player == WHITE ? "Black" : "White");
+        return;
+    }
 
-	printf("%s player won!", game->current_player == WHITE ? "Black" : "White");
+	printf("Stalemate, no one won!");
 }

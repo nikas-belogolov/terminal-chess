@@ -25,8 +25,8 @@ int main()
 		board_move(game, get_move(game));
 	}
 
-	clear_screen();
-	board_print(game);
+	/*clear_screen();
+	board_print(game);*/
 	game_print_winner(game);
 
 	return 0;

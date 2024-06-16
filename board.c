@@ -23,6 +23,24 @@ const char* chess_pieces[NUM_CHESS_PIECES] = {
 };
 
 void board_init(Piece board[8][8]) {
+
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            board[i][j] = EMPTY;
+        }
+    }
+
+    /*board[1][0] = WHITE_PAWN;
+    board[1][1] = WHITE_PAWN;
+    board[0][0] = WHITE_KING;
+    board[3][6] = WHITE_ROOK;
+
+
+    board[0][7] = BLACK_ROOK;
+    board[7][4] = BLACK_KING;*/
+
+
+
     board[0][0] = board[0][7] = WHITE_ROOK;
     board[0][1] = board[0][6] = WHITE_KNIGHT;
     board[0][2] = board[0][5] = WHITE_BISHOP;
@@ -40,11 +58,7 @@ void board_init(Piece board[8][8]) {
         board[6][i] = BLACK_PAWN;
     }
 
-    for (int i = 2; i < 6; i++) {
-        for (int j = 0; j < 8; j++) {
-            board[i][j] = EMPTY;
-        }
-    }
+    
 }
 
 bool is_last_move_en_passant(Game* game, Move move) {
