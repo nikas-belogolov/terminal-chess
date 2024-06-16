@@ -11,8 +11,10 @@ endif()
 
 project ("terminal-chess")
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 # Add source to this project's executable.
-add_executable (terminal-chess "main.c"  "game.c" "game.h" "board.h" "board.c" "io.h" "io.c" "move.h" "move.c" "utils.h" "utils.c")
+add_executable (terminal-chess "main.c"  "src/game.c" "include/game.h" "include/board.h" "src/board.c" "include/io.h" "src/io.c" "include/move.h" "src/move.c" "include/utils.h" "src/utils.c")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET terminal-chess PROPERTY CXX_STANDARD 20)
