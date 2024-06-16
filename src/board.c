@@ -30,17 +30,6 @@ void board_init(Piece board[8][8]) {
         }
     }
 
-    /*board[1][0] = WHITE_PAWN;
-    board[1][1] = WHITE_PAWN;
-    board[0][0] = WHITE_KING;
-    board[3][6] = WHITE_ROOK;
-
-
-    board[0][7] = BLACK_ROOK;
-    board[7][4] = BLACK_KING;*/
-
-
-
     board[0][0] = board[0][7] = WHITE_ROOK;
     board[0][1] = board[0][6] = WHITE_KNIGHT;
     board[0][2] = board[0][5] = WHITE_BISHOP;

@@ -19,7 +19,8 @@ static bool is_legal_pawn_move(Game* game, Move move) {
     int ranks_moved = abs(move.from.rank - move.to.rank);
     int files_moved = abs(move.from.file - move.to.file);
 
-    if (ranks_moved > 2 || files_moved > 1) return false; // Pawns cannot move more than 2 squares or more than one file
+    // Pawns cannot move more than 2 ranks, more than one file or 0 ranks
+    if (ranks_moved > 2 || files_moved > 1 || ranks_moved == 0) return false; 
 
     if ((game->current_player == WHITE && (move.from.rank - move.to.rank) > 0) ||
         (game->current_player == BLACK && (move.from.rank - move.to.rank) < 0)) return false; // Pawn cannot move backwards
@@ -33,6 +34,8 @@ static bool is_legal_pawn_move(Game* game, Move move) {
     if (game->board[move.to.rank][move.to.file] == EMPTY &&
         files_moved == 1 &&
         !is_last_move_initial_two_square_pawn_advance(game)) return false; // Moving diagonally without en pasant. Illegal move
+
+    printf("Legal pawn move");
 
     return true;
 }
@@ -272,8 +275,6 @@ static bool can_pawn_move(Game* game, Position pos) {
         possible_positions[3] = (Position){ pos.rank - 1, pos.file - 1 };
     }
 
-    printf("Can pawn move: %d", pos.rank + 2);
-
     for (int i = 0; i < 4; i++) {
         Position to = possible_positions[i];
         if (!is_legal_position(to)) continue; // Illegal move
@@ -346,21 +347,6 @@ static bool can_rook_move(Game* game, Position pos) {
         }
     }
 
-    //for (int rank = pos.rank + 1; rank < 8; rank++) {
-    //    if (is_legal_move(game, (Move) { pos, { rank, pos.file } })) return true;
-    //}
-
-    //for (int rank = pos.rank - 1; rank >= 0; rank--) {
-    //    if (is_legal_move(game, (Move) { pos, { rank, pos.file } })) return true;
-    //}
-
-    //for (int file = pos.file - 1; file >= 0; file--) {
-    //    if (is_legal_move(game, (Move) { pos, { pos.rank, file } })) return true;
-    //}
-    //for (int file = pos.file + 1; file < 8; file++) {
-    //    if (is_legal_move(game, (Move) { pos, { pos.rank, file } })) return true;
-    //}
-    
     return false;
 }
 
@@ -411,8 +397,6 @@ bool can_piece_move(Game* game, Position pos) {
 
 static void get_rook_check_path(Game* game, Position king_pos, Position checking_piece_pos, Position* path) {
     
-    //printf("\nchecking_piece_pos: %d %d\n", checking_piece_pos.rank, checking_piece_pos.file);
-
     if (king_pos.rank == checking_piece_pos.rank) {
 
         int min_file = min(king_pos.file, checking_piece_pos.file);
@@ -429,7 +413,6 @@ static void get_rook_check_path(Game* game, Position king_pos, Position checking
         for (int i = 0, rank = min_rank + 1; rank < max_rank; rank++, i++) {
             path[i].rank = rank;
             path[i].file = king_pos.file;
-            //path[i] = (Position){ rank, king_pos.file };
         }
     }
 }
@@ -447,18 +430,25 @@ static void get_bishop_check_path(Game* game, Position king_pos, Position checki
         rank != king_pos.rank;
         rank += rank_step, file += file_step, i++) {
     
+
         path[i].rank = rank;
         path[i].file = file;
-        //path[i] = (Position){ rank, file };
+    
+        //printf("\nget_bishop_check_path: %d %d\n", path[i].rank, path[i].file);
+
     }
 }
 
+static void get_queen_check_path(Game* game, Position king_pos, Position checking_piece_pos, Position* path) {
+    if (checking_piece_pos.rank == king_pos.rank || checking_piece_pos.file == king_pos.file)
+        get_rook_check_path(game, king_pos, checking_piece_pos, path);
+    else
+        get_bishop_check_path(game, king_pos, checking_piece_pos, path);
+}
 
 void get_piece_check_path(Game* game, Position king_pos, Position checking_piece_pos, Position* path) {
 
     Piece piece_type = game->board[checking_piece_pos.rank][checking_piece_pos.file];
-
-    //printf("\npiece_type %d %d \n", checking_piece_pos.rank, checking_piece_pos.file);
 
     // Can only block rooks, bishops, and queens
     switch (piece_type) {
@@ -470,5 +460,8 @@ void get_piece_check_path(Game* game, Position king_pos, Position checking_piece
         case WHITE_BISHOP:
             get_bishop_check_path(game, king_pos, checking_piece_pos, path);
             break;
+        case BLACK_QUEEN:
+        case WHITE_QUEEN:
+            get_queen_check_path(game, king_pos, checking_piece_pos, path);
     }
 }

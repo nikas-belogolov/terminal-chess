@@ -73,8 +73,11 @@ static bool is_checkmate(Game* game) {
         for (int file = 0; file < 8; file++) {
             if (is_current_player_piece(game->current_player, game->board[rank][file])) {
                 // Check if  piece can eat the checking piece
-                if (is_legal_move(game, (Move) { { rank, file }, { checking_piece_pos.rank, checking_piece_pos.file } }))
+                if (is_legal_move(game, (Move) { { rank, file }, { checking_piece_pos.rank, checking_piece_pos.file } })) {
+                    printf("\npiece type: %d rank: %d file: %d\n", game->board[rank][file], rank, file);
                     return false;
+
+                }
 
                 Position checking_path[7] = { -1, -1 };
 
@@ -86,12 +89,17 @@ static bool is_checkmate(Game* game) {
                 
                 for (int i = 0; i < 7; i++) {
                     if (checking_path[i].rank == -1) break;
-                    if (is_legal_move(game, (Move) { { rank, file }, checking_path[i] }))
+                    if (is_legal_move(game, (Move) { { rank, file }, checking_path[i] })) {
+                        printf("Not Checkmate!!!!!");
                         return false;
+
+                    }
                 }
             }
         }
     }
+
+    printf("Checkmate!!!!!");
 
     return true;
 }
