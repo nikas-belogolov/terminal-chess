@@ -2,7 +2,7 @@
 #include "board.h"
 #include "game.h"
 #include "io.h"
-
+#include <stdlib.h>
 #define THIN_SPACE u8" "
 
 

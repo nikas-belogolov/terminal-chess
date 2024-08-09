@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "game.h"
 #include "utils.h"
 #include "move.h"

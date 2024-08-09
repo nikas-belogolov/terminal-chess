@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+
 static bool is_last_move_initial_two_square_pawn_advance(Game* game) {
     if (game->last_move.from.rank == -1) return false;
     return  (

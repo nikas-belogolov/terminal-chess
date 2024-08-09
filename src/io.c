@@ -1,11 +1,60 @@
 #include "io.h"
 #include "game.h"
 #include "move.h"
-
+#include <ctype.h>
 #include <stdbool.h>
 
 #define RED_COLOR_START "\033[0;31m"
 #define RED_COLOR_END "\033[0m"
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
+void clear_screen(void)
+{
+#ifdef _WIN32
+    HANDLE                     hStdOut;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD                      count;
+    DWORD                      cellCount;
+    COORD                      homeCoords = { 0, 0 };
+
+    hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hStdOut == INVALID_HANDLE_VALUE) return;
+
+    /* Get the number of cells in the current buffer */
+    if (!GetConsoleScreenBufferInfo(hStdOut, &csbi)) return;
+    cellCount = csbi.dwSize.X * csbi.dwSize.Y;
+
+    /* Fill the entire buffer with spaces */
+    if (!FillConsoleOutputCharacter(
+        hStdOut,
+        (TCHAR)' ',
+        cellCount,
+        homeCoords,
+        &count
+    )) return;
+
+    /* Fill the entire buffer with the current colors and attributes */
+    if (!FillConsoleOutputAttribute(
+        hStdOut,
+        csbi.wAttributes,
+        cellCount,
+        homeCoords,
+        &count
+    )) return;
+
+    /* Move the cursor home */
+    SetConsoleCursorPosition(hStdOut, homeCoords);
+#else
+const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
+   write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 11);
+#endif
+}
+
 
 static void clear_input_buffer(void) {
 	int ch;
