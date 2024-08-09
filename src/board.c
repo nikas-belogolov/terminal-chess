@@ -129,7 +129,7 @@ void board_print(Game* game) {
 
             for (int j = 0; j <= 7; j++) {
                 if (game->board[i][j] == WHITE_PAWN) {
-                    printf("%s%s", THIN_SPACE, chess_pieces[game->board[i][j]]);
+                    printf("%s%s ", THIN_SPACE, chess_pieces[game->board[i][j]]);
                 }
                 else {
                     printf(" %s ", chess_pieces[game->board[i][j]]);
@@ -149,7 +149,7 @@ void board_print(Game* game) {
 
             for (int j = 7; j >= 0; j--) {
                 if (game->board[i][j] == WHITE_PAWN) {
-                    printf("%s%s", THIN_SPACE, chess_pieces[game->board[i][j]]);
+                    printf("%s%s ", THIN_SPACE, chess_pieces[game->board[i][j]]);
                 }
                 else {
                     printf(" %s ", chess_pieces[game->board[i][j]]);

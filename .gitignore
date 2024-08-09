@@ -10,4 +10,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 .vs
+.vscode
+*.exe
+terminal-chess
 out

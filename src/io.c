@@ -85,7 +85,7 @@ Piece get_pawn_promotion(Game* game) {
 		fgets(piece, 2, stdin);
 		clear_input_buffer();
 
-		piece[0] == (char)tolower((unsigned char)piece[0]);
+		piece[0] = (char)tolower((unsigned char)piece[0]);
 
 		if (piece[0] == 'q' || piece[0] == 'r' || piece[0] == 'b' || piece[0] == 'k') break;
 

@@ -6,6 +6,11 @@
 #include "locale.h"
 #include "io.h"
 
+#ifdef _WIN32
+#include "windows.h"
+#include <WinNls.h>
+#endif
+
 int main()
 {
 	setlocale(LC_ALL, "en_US.UTF-8");
@@ -15,13 +20,12 @@ int main()
 	
 	Game* game = game_create();
 	
-	board_print(game);
+	// board_print(game);
 
 	while (!game_is_over(game)) {
 		clear_screen();
 		board_print(game);
 		printf("\nPlayer to move: %s\n", game->current_player == WHITE ? "white" : "black");
-
 		board_move(game, get_move(game));
 	}
 
